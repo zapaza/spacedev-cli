@@ -46,7 +46,7 @@
     "vue-tsc": "^3.2.4"
   },
   "overrides": {
-    "minimatch": "10.2.2"
+    "minimatch": ">=10.2.3"
   },
   "engines": {
     "node": "^20.19.0 || >=22.12.0"
