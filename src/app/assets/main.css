@@ -1,0 +1,107 @@
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --neon-primary: #33FF66;
+  --neon-soft: #1EBE5A;
+  --neon-dim: #0F7A3B;
+  --neon-glow: #66FF99;
+  --scanline-color: rgba(51, 255, 102, 0.03);
+}
+
+[data-theme="senior"] {
+  --neon-primary: #FF4D4D;
+  --neon-soft: #BE1E1E;
+  --neon-dim: #7A0F0F;
+  --neon-glow: #FF9999;
+  --scanline-color: rgba(255, 77, 77, 0.03);
+}
+
+@layer base {
+  html, body {
+    @apply h-full m-0 p-0;
+  }
+
+  body {
+    @apply bg-background-primary text-neon-primary font-mono antialiased overflow-hidden select-none;
+    letter-spacing: 0.5px;
+    line-height: 1.6;
+    font-size: 14px;
+    color: var(--neon-primary);
+    background-color: #050607;
+  }
+
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    @apply bg-background-deep;
+  }
+  ::-webkit-scrollbar-thumb {
+    @apply bg-neon-dim hover:bg-neon-soft rounded;
+  }
+}
+
+@layer components {
+  .crt-screen {
+    @apply relative overflow-hidden h-full w-full;
+  }
+
+  .neon-text {
+    @apply transition-[text-shadow] duration-300;
+    text-shadow: 0 0 4px var(--neon-primary), 0 0 8px var(--neon-primary);
+  }
+
+  /* Режим низкой производительности или уменьшенного движения */
+  .low-perf .neon-text,
+  .reduced-motion .neon-text {
+    text-shadow: none !important;
+  }
+
+  .low-perf .animate-glow-pulse,
+  .reduced-motion .animate-glow-pulse {
+    animation: none !important;
+    text-shadow: 0 0 4px var(--neon-primary) !important;
+  }
+
+  .low-perf .animate-flicker,
+  .reduced-motion .animate-flicker {
+    animation: none !important;
+  }
+
+  .low-perf .animate-ping,
+  .reduced-motion .animate-ping {
+    animation: none !important;
+  }
+
+  .flicker {
+    @apply animate-flicker;
+  }
+
+  .panel {
+    @apply bg-background-panel border border-neon-dim/30 rounded-sm;
+  }
+
+  .terminal-input {
+    @apply bg-transparent border-none outline-none text-neon-primary caret-neon-primary w-full;
+  }
+
+  .loading-dots::after {
+    content: "...";
+    display: inline-block;
+    width: 0;
+    overflow: hidden;
+    vertical-align: bottom;
+    animation: loading-dots 1.5s steps(4) infinite;
+  }
+}
+
+@keyframes loading-dots {
+  to {
+    width: 1.25em;
+  }
+}
