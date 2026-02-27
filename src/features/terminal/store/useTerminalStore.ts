@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia';
 import type { TerminalState, TerminalEntry, EntryType } from '../types';
 import { i18n } from '@/shared/lib/i18n';
+import { generateId } from '@/shared/lib/uuid';
 
 const DEFAULT_TYPEWRITER_SPEED_MS = 20;
 
@@ -8,7 +9,7 @@ export const useTerminalStore = defineStore('terminal', {
   state: (): TerminalState & { isTyping: boolean; skipTyping: boolean; theme: 'default' | 'senior' } => ({
     history: [
       {
-        id: crypto.randomUUID(),
+        id: generateId(),
         type: 'system',
         content: i18n.global.t('terminal.welcome'),
         timestamp: Date.now(),
@@ -24,7 +25,7 @@ export const useTerminalStore = defineStore('terminal', {
   actions: {
     addEntry(content: string, type: EntryType = 'output') {
       const entry: TerminalEntry = {
-        id: crypto.randomUUID(),
+        id: generateId(),
         type,
         content,
         timestamp: Date.now(),
@@ -34,7 +35,7 @@ export const useTerminalStore = defineStore('terminal', {
 
     async addTypewriterEntry(content: string, type: EntryType = 'output', speed: number = DEFAULT_TYPEWRITER_SPEED_MS) {
       this.isTyping = true;
-      const id = crypto.randomUUID();
+      const id = generateId();
       const entry: TerminalEntry = {
         id,
         type,
