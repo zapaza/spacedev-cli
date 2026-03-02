@@ -84,6 +84,7 @@ import type { ThemeName } from '@/shared/constants/theme'
 
 import type { MatrixScene } from '@/features/scenes/logic/MatrixScene'
 import type { AsciiAssembleScene } from '@/features/scenes/logic/AsciiAssembleScene'
+import type { NotFound404Scene } from '@/features/scenes/logic/NotFound404Scene'
 
 const { t } = useI18n()
 const sceneStore = useSceneStore()
@@ -141,6 +142,7 @@ const targetMouse = { x: 0, y: 0 }
 let matrixCtx: CanvasRenderingContext2D | null = null
 let activeMatrixScene: MatrixScene | null = null
 let activeAsciiScene: AsciiAssembleScene | null = null
+let activeNotFoundScene: NotFound404Scene | null = null
 
 const initMatrix = () => {
   if (!matrixCanvasRef.value) {
@@ -246,6 +248,9 @@ const handleResize = () => {
   if (activeAsciiScene) {
     activeAsciiScene.resize(performanceStore.isLowPerformance)
   }
+  if (activeNotFoundScene) {
+    activeNotFoundScene.resize(performanceStore.isLowPerformance)
+  }
 }
 
 const handleMouseMove = (event: MouseEvent) => {
@@ -330,6 +335,8 @@ const animate = () => {
     activeMatrixScene.draw(terminalStore.theme === 'senior', performanceStore.isLowPerformance)
   } else if (sceneStore.currentScene === SCENE_NAMES.ASCII_ASSEMBLE && activeAsciiScene) {
     activeAsciiScene.draw(terminalStore.theme === 'senior', performanceStore.isLowPerformance)
+  } else if (sceneStore.currentScene === SCENE_NAMES.NOT_FOUND && activeNotFoundScene) {
+    activeNotFoundScene.draw(terminalStore.theme === 'senior', performanceStore.isLowPerformance)
   } else {
     renderer.render(scene, camera)
   }
@@ -348,6 +355,9 @@ const dispose = () => {
   }
   if (activeAsciiScene) {
     activeAsciiScene.dispose()
+  }
+  if (activeNotFoundScene) {
+    activeNotFoundScene.dispose()
   }
 
   if (renderer) {
@@ -391,8 +401,12 @@ watch(() => sceneStore.currentScene, async (newScene) => {
   if (activeAsciiScene) {
     activeAsciiScene.dispose()
   }
+  if (activeNotFoundScene) {
+    activeNotFoundScene.dispose()
+  }
   activeMatrixScene = null
   activeAsciiScene = null
+  activeNotFoundScene = null
 
   if (newScene.startsWith('project-')) {
     const slug = newScene.replace('project-', '')
@@ -433,6 +447,9 @@ watch(() => sceneStore.currentScene, async (newScene) => {
         } else if (newScene === SCENE_NAMES.ASCII_ASSEMBLE && sceneStore.sceneParams?.ascii) {
           const { AsciiAssembleScene: AsciiClass } = await import('@/features/scenes/logic/AsciiAssembleScene')
           activeAsciiScene = new AsciiClass(matrixCtx, matrixCanvasRef.value, sceneStore.sceneParams.ascii as string, performanceStore.isLowPerformance)
+        } else if (newScene === SCENE_NAMES.NOT_FOUND) {
+          const { NotFound404Scene: NotFoundClass } = await import('@/features/scenes/logic/NotFound404Scene')
+          activeNotFoundScene = new NotFoundClass(matrixCtx, matrixCanvasRef.value, performanceStore.isLowPerformance, t('notFound.sceneSubText'))
         }
       }
     } else {

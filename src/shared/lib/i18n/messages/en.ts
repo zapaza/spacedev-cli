@@ -143,6 +143,21 @@ export default {
       description: 'Aceña is a modern LMS for foreign language teachers. Built with Vue.js and Capacitor for cross-platform support. Features AI-powered lesson creation and interactive assignments.',
     },
   },
+  notFound: {
+    navigating: '> navigating to {path}',
+    resolving: '> resolving route...',
+    syncing: '> syncing timelines [past|future]...',
+    scanning: '> scanning sectors...',
+    seekingSector: 'seeking sector: /routes/…',
+    checksumMismatch: 'checksum mismatch',
+    temporalDesync: '> TEMPORAL DESYNC DETECTED',
+    routeNotFound: '> ROUTE_NOT_FOUND',
+    outsideMap: '> you are outside the map',
+    typeHome: "> Type 'home' to return",
+    returning: '> Returning to known timeline...',
+    homeDesc: 'Return to the main page',
+    sceneSubText: 'ROUTE_NOT_FOUND',
+  },
   courses: {
     'advanced-webgl': {
       title: 'Advanced WebGL & Shaders',

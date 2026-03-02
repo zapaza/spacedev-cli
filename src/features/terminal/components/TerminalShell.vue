@@ -5,11 +5,12 @@
   >
     <div
       class="flex-1 flex flex-col p-4 md:p-6 min-w-0 overflow-hidden relative"
-      style="
-        padding-top: env(safe-area-inset-top);
-        padding-left: env(safe-area-inset-left);
-        padding-right: env(safe-area-inset-right);
-      "
+      :style="{
+        paddingTop: 'env(safe-area-inset-top)',
+        paddingLeft: 'env(safe-area-inset-left)',
+        paddingRight: 'env(safe-area-inset-right)',
+        paddingBottom: inputBottomOffset > 0 ? `${inputBottomOffset}px` : undefined,
+      }"
       @click="focusInput"
     >
       <div
@@ -42,8 +43,10 @@
       </div>
 
       <div
-        class="flex items-center gap-2 relative bg-background-panel/80 backdrop-blur-sm pointer-events-auto"
-        style="padding-bottom: env(safe-area-inset-bottom);"
+        class="flex items-center gap-2 relative bg-background-panel/80 backdrop-blur-sm pointer-events-auto shrink-0"
+        :style="{
+          paddingBottom: inputBottomOffset > 0 ? '4px' : 'env(safe-area-inset-bottom)',
+        }"
       >
         <span class="text-neon-glow font-bold shrink-0 animate-glow-pulse text-xs md:text-sm">{{ t('terminal.prompt') }}</span>
 
@@ -69,7 +72,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, nextTick, watch } from 'vue';
+import { ref, onMounted, onBeforeUnmount, nextTick, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useTerminalStore } from '../store/useTerminalStore';
 import { useCommandEngine } from '../logic/commandEngine';
@@ -82,6 +85,20 @@ const engine = useCommandEngine();
 const currentInput = ref('');
 const terminalHistory = ref<HTMLElement | null>(null);
 const inputRef = ref<HTMLInputElement | null>(null);
+const inputBottomOffset = ref(0);
+
+// Обработка экранной клавиатуры через visualViewport
+function handleViewportResize() {
+  if (window.visualViewport) {
+    const vv = window.visualViewport;
+    const offsetFromBottom = window.innerHeight - (vv.offsetTop + vv.height);
+    inputBottomOffset.value = Math.max(0, offsetFromBottom);
+    // Scroll after layout adjusts to new padding
+    scrollToBottom();
+    // Fallback scroll with delay for slower devices
+    setTimeout(scrollToBottom, 150);
+  }
+}
 
 const formatContent = (content: string) => {
   const urlRegex = /(https?:\/\/[^\s]+)/g;
@@ -96,13 +113,19 @@ const formatContent = (content: string) => {
 
 const scrollToBottom = async () => {
   await nextTick();
-  if (terminalHistory.value) {
-    terminalHistory.value.scrollTop = terminalHistory.value.scrollHeight;
-  }
+  // Double rAF ensures layout is fully recalculated (especially after keyboard open/close)
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      if (terminalHistory.value) {
+        terminalHistory.value.scrollTop = terminalHistory.value.scrollHeight;
+      }
+    });
+  });
 };
 
 watch(() => store.history.length, scrollToBottom);
 watch(() => store.history.map(e => e.content), scrollToBottom, { deep: true });
+watch(inputBottomOffset, scrollToBottom);
 
 const handleEnter = async () => {
   if (store.isTyping) {
@@ -158,6 +181,17 @@ const focusInput = () => {
 onMounted(() => {
   focusInput();
   scrollToBottom();
+  if (window.visualViewport) {
+    window.visualViewport.addEventListener('resize', handleViewportResize);
+    window.visualViewport.addEventListener('scroll', handleViewportResize);
+  }
+});
+
+onBeforeUnmount(() => {
+  if (window.visualViewport) {
+    window.visualViewport.removeEventListener('resize', handleViewportResize);
+    window.visualViewport.removeEventListener('scroll', handleViewportResize);
+  }
 });
 </script>
 

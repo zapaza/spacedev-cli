@@ -25,10 +25,8 @@ watch(() => [sceneStore.currentScene, settingsStore.lang], ([newScene, newLang])
     const project = projects.find(p => p.slug === slug)
     if (project) {
       document.title = `${t(project.name)} | ${t('terminal.title')}`
-      return
     }
   }
-  document.title = t('terminal.title')
 }, { immediate: true })
 
 onMounted(() => {

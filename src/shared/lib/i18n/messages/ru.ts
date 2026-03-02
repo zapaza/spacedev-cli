@@ -143,6 +143,21 @@ export default {
       description: 'Aceña — это современная образовательная платформа (LMS) для учителей иностранных языков. Vue.js + Capacitor для кроссплатформенности. Инструменты создания уроков с помощью ИИ, интерактивные задания и аналитика.',
     },
   },
+  notFound: {
+    navigating: '> навигация к {path}',
+    resolving: '> разрешение маршрута...',
+    syncing: '> синхронизация таймлайнов [past|future]...',
+    scanning: '> сканирование секторов...',
+    seekingSector: 'поиск сектора: /routes/…',
+    checksumMismatch: 'несовпадение контрольной суммы',
+    temporalDesync: '> ОБНАРУЖЕНА ВРЕМЕННАЯ ДЕСИНХРОНИЗАЦИЯ',
+    routeNotFound: '> МАРШРУТ_НЕ_НАЙДЕН',
+    outsideMap: '> вы за пределами карты',
+    typeHome: "> Введите 'home' для возврата",
+    returning: '> Возврат к известному таймлайну...',
+    homeDesc: 'Вернуться на главную страницу',
+    sceneSubText: 'МАРШРУТ_НЕ_НАЙДЕН',
+  },
   courses: {
     'advanced-webgl': {
       title: 'Advanced WebGL & Shaders',

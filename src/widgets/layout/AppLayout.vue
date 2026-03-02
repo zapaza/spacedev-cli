@@ -20,7 +20,7 @@
           <div
             class="h-full md:border-r border-neon-dim/10 relative overflow-hidden flex flex-col animate-panel-appear w-full md:w-1/2"
             :class="{
-              'absolute inset-0 z-20 bg-transparent pointer-events-none md:relative': isFullscreen
+              'md:absolute md:inset-0 md:z-20 md:bg-transparent md:pointer-events-none md:relative': isFullscreen
             }"
           >
             <slot name="terminal">
@@ -32,12 +32,7 @@
 
           <!-- Render Pane (50% desktop, hidden mobile, fullscreen in visual scenes) -->
           <div
-            class="h-full relative overflow-hidden flex-col items-center justify-center bg-background-primary/30 animate-panel-appear [animation-delay:200ms]"
-            :class="[
-              isFullscreen
-                ? 'flex w-full md:w-1/2'
-                : 'hidden md:flex md:w-1/2'
-            ]"
+            class="hidden md:flex md:w-1/2 h-full relative overflow-hidden flex-col items-center justify-center bg-background-primary/30 animate-panel-appear [animation-delay:200ms]"
           >
             <slot name="render">
               <div class="flex flex-col items-center gap-4 opacity-30">

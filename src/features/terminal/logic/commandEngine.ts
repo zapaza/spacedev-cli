@@ -44,6 +44,7 @@ export class CommandEngine {
   private terminalStore = useTerminalStore();
   private sceneStore = useSceneStore();
   private settingsStore = useSettingsStore();
+  private allowedCommands: Set<string> | null = null;
 
   constructor() {
     this.registerDefaultCommands();
@@ -247,6 +248,11 @@ export class CommandEngine {
     this.commands[command.name.toLowerCase()] = command;
   }
 
+  /** Ограничить доступные команды только указанным набором */
+  setAllowedCommands(names: string[] | null) {
+    this.allowedCommands = names ? new Set(names.map(n => n.toLowerCase())) : null;
+  }
+
   async execute(input: string) {
     const trimmedInput = input.trim();
     if (!trimmedInput) return;
@@ -260,7 +266,7 @@ export class CommandEngine {
 
     const command = this.commands[cmdName.toLowerCase()];
 
-    if (command) {
+    if (command && (!this.allowedCommands || this.allowedCommands.has(cmdName.toLowerCase()))) {
       await command.execute(args);
     } else {
       this.terminalStore.addEntry(t('errors.unknownCommand', { cmd: cmdName }), 'error');
@@ -277,7 +283,8 @@ export class CommandEngine {
 
     // Autocomplete command name
     if (parts.length === 1 && !hasTrailingSpace && parts[0]) {
-      const matches = cmdNames.filter(name => name.startsWith(parts[0]!.toLowerCase()));
+      const filteredNames = this.allowedCommands ? cmdNames.filter(n => this.allowedCommands!.has(n)) : cmdNames;
+      const matches = filteredNames.filter(name => name.startsWith(parts[0]!.toLowerCase()));
       if (matches.length === 1 && matches[0]) {
         return matches[0] + ' ';
       }
