@@ -78,6 +78,13 @@ export default {
     echo: {
         desc: 'Print text to terminal'
     },
+    doom: {
+       desc: 'Run Doom',
+       loading: 'LOADING DEMONIC ENTITIES...',
+       closed: 'DOOM SESSION TERMINATED. RETURNING TO TERMINAL INTERFACE...',
+       fullscreen: 'Fullscreen',
+       close: 'Close Game'
+    },
     lang: {
         desc: 'Change interface language (ru/en)',
         usage: 'Usage: lang <ru|en>',

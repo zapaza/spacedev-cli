@@ -4,12 +4,18 @@
     <canvas ref="canvasRef" class="block outline-none" :class="{ 'opacity-0': isFullscreen }"></canvas>
 
     <canvas
-      v-if="isFullscreen"
+      v-if="isFullscreen && sceneStore.currentScene !== SCENE_NAMES.DOOM"
       ref="matrixCanvasRef"
       class="absolute inset-0 block outline-none pointer-events-none"
     ></canvas>
 
+    <!-- Doom Player -->
+    <DoomPlayer
+      v-if="sceneStore.currentScene === SCENE_NAMES.DOOM"
+    />
+
     <div
+      v-if="sceneStore.currentScene !== SCENE_NAMES.DOOM"
       class="absolute inset-0 pointer-events-none p-4 md:p-6 flex flex-col justify-between"
       style="
         padding-top: env(safe-area-inset-top);
@@ -35,7 +41,7 @@
       </div>
 
       <div
-        v-if="!isFullscreen && sceneStore.currentScene !== SCENE_NAMES.ABOUT"
+        v-if="!isFullscreen && sceneStore.currentScene !== SCENE_NAMES.ABOUT && sceneStore.currentScene !== SCENE_NAMES.DOOM"
         class="flex flex-col items-center gap-4 transition-all duration-500"
         :class="{ 'opacity-0': sceneStore.isLoading }"
       >
@@ -72,7 +78,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onBeforeUnmount, watch, nextTick } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount, watch, nextTick, defineAsyncComponent } from 'vue'
 import { useI18n } from 'vue-i18n'
 import type * as THREE_TYPES from 'three'
 import { useSceneStore } from '@/features/scenes/store/useSceneStore'
@@ -81,6 +87,8 @@ import { usePerformanceStore } from '@/shared/store/usePerformanceStore'
 import { SCENE_NAMES, isFullscreenScene } from '@/shared/constants/scenes'
 import { THEME_COLORS, SCENE_COLORS } from '@/shared/constants/theme'
 import type { ThemeName } from '@/shared/constants/theme'
+
+const DoomPlayer = defineAsyncComponent(() => import('@/features/doom/components/DoomPlayer.vue'))
 
 import type { MatrixScene } from '@/features/scenes/logic/MatrixScene'
 import type { AsciiAssembleScene } from '@/features/scenes/logic/AsciiAssembleScene'
@@ -143,6 +151,7 @@ let matrixCtx: CanvasRenderingContext2D | null = null
 let activeMatrixScene: MatrixScene | null = null
 let activeAsciiScene: AsciiAssembleScene | null = null
 let activeNotFoundScene: NotFound404Scene | null = null
+let resizeObserver: ResizeObserver | null = null
 
 const initMatrix = () => {
   if (!matrixCanvasRef.value) {
@@ -350,6 +359,11 @@ const dispose = () => {
   window.removeEventListener('mousemove', handleMouseMove)
   window.removeEventListener('keydown', handleKeyDown)
 
+  if (resizeObserver) {
+    resizeObserver.disconnect()
+    resizeObserver = null
+  }
+
   if (activeMatrixScene) {
     activeMatrixScene.dispose()
   }
@@ -382,6 +396,13 @@ onMounted(() => {
   window.addEventListener('resize', handleResize)
   window.addEventListener('mousemove', handleMouseMove)
   window.addEventListener('keydown', handleKeyDown)
+
+  if (containerRef.value) {
+    resizeObserver = new ResizeObserver(() => {
+      handleResize()
+    })
+    resizeObserver.observe(containerRef.value)
+  }
 })
 
 onBeforeUnmount(() => {

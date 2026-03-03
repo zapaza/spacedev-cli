@@ -18,9 +18,11 @@
         <!-- Split Layout Structure -->
         <div class="flex w-full h-full relative z-10">
           <div
-            class="h-full md:border-r border-neon-dim/10 relative overflow-hidden flex flex-col animate-panel-appear w-full md:w-1/2"
+            class="h-full border-neon-dim/10 relative overflow-hidden flex flex-col animate-panel-appear transition-all duration-500 ease-in-out"
             :class="{
-              'md:absolute md:inset-0 md:z-20 md:bg-transparent md:pointer-events-none md:relative': isFullscreen
+              'w-full md:w-1/2 md:border-r pointer-events-auto': !isFullscreen,
+              'md:w-0 opacity-0 pointer-events-none !border-r-0 overflow-hidden': isDoom,
+              'md:absolute md:inset-0 md:z-20 md:bg-transparent md:pointer-events-none w-full h-full': isFullscreen && !isDoom
             }"
           >
             <slot name="terminal">
@@ -30,9 +32,13 @@
             </slot>
           </div>
 
-          <!-- Render Pane (50% desktop, hidden mobile, fullscreen in visual scenes) -->
+          <!-- Render Pane -->
           <div
-            class="hidden md:flex md:w-1/2 h-full relative overflow-hidden flex-col items-center justify-center bg-background-primary/30 animate-panel-appear [animation-delay:200ms]"
+            class="h-full relative overflow-hidden flex flex-col items-center justify-center bg-background-primary/30 animate-panel-appear [animation-delay:200ms] transition-all duration-500 ease-in-out"
+            :class="{
+              'w-0 opacity-0 pointer-events-none md:w-1/2 md:opacity-100 md:pointer-events-auto md:flex': !isFullscreen,
+              'w-full flex opacity-100 pointer-events-auto': isFullscreen
+            }"
           >
             <slot name="render">
               <div class="flex flex-col items-center gap-4 opacity-30">
@@ -55,12 +61,19 @@ import CRTOverlay from '@/shared/components/CRTOverlay.vue'
 import { useTerminalStore } from '@/features/terminal/store/useTerminalStore'
 import { useSceneStore } from '@/features/scenes/store/useSceneStore'
 import { usePerformanceStore } from '@/shared/store/usePerformanceStore'
-import { isFullscreenScene } from '@/shared/constants/scenes'
+import { isFullscreenScene, SCENE_NAMES } from '@/shared/constants/scenes'
 
 const terminalStore = useTerminalStore()
 const sceneStore = useSceneStore()
 const performanceStore = usePerformanceStore()
-const isFullscreen = computed(() => isFullscreenScene(sceneStore.currentScene))
+const isFullscreen = computed(() => {
+  const current = isFullscreenScene(sceneStore.currentScene);
+  const next = sceneStore.nextScene ? isFullscreenScene(sceneStore.nextScene as string) : false;
+  return current || next;
+})
+const isDoom = computed(() => {
+  return sceneStore.currentScene === SCENE_NAMES.DOOM || sceneStore.nextScene === SCENE_NAMES.DOOM;
+})
 </script>
 
 <style scoped>

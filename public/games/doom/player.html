@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>DOOM Player Interface</title>
+    <script src="js-dos.js"></script>
+    <style>
+        html, body, #dos {
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            background: black;
+        }
+
+        .dosbox-container {
+            height: 100%;
+            width: 100%;
+            aspect-ratio: auto 16/8;
+        }
+
+        canvas {
+            width: 100%;
+            height: 100%;
+            //object-fit: contain;
+            image-rendering: pixelated;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="dos-canvas"></canvas>
+    <script>
+        // Помогаем эмулятору найти WASM файл
+        window.WDOSBOX = {
+            locateFile: (path) => {
+                if (path.endsWith(".wasm")) {
+                    return "/games/doom/" + path;
+                }
+                return path;
+            }
+        };
+
+        const canvas = document.getElementById("dos-canvas");
+        let ciInstance = null;
+        
+        window.Dos(canvas, {
+            wdosboxUrl: "/games/doom/wdosbox.js",
+            onTerminate: () => {
+                window.parent.postMessage({ type: 'doom-terminated' }, '*');
+            }
+        }).ready((fs, main) => {
+            console.log("js-dos is ready, extracting game...");
+            fs.extract("/games/doom/doom.jsdos").then(() => {
+                console.log("Game extracted, starting main...");
+                return main(["-c", "DOOM.EXE"]);
+            }).then((ci) => {
+                ciInstance = ci;
+                window.focus();
+                window.parent.postMessage({ type: 'doom-ready' }, '*');
+            }).catch((err) => {
+                console.error("Error starting game:", err);
+            });
+        });
+
+        window.addEventListener('message', (event) => {
+            if (event.data.type === 'doom-exit') {
+                if (ciInstance && typeof ciInstance.exit === 'function') {
+                    ciInstance.exit();
+                }
+            }
+        });
+    </script>
+</body>
+</html>

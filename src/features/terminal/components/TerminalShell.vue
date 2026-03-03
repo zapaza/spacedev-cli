@@ -1,6 +1,6 @@
 <template>
   <div
-    class="flex h-full font-mono overflow-hidden"
+    class="flex h-full font-mono overflow-hidden pointer-events-auto"
     @click="focusInput"
   >
     <div
@@ -76,11 +76,14 @@ import { ref, onMounted, onBeforeUnmount, nextTick, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useTerminalStore } from '../store/useTerminalStore';
 import { useCommandEngine } from '../logic/commandEngine';
+import { useSceneStore } from '../../scenes/store/useSceneStore';
+import { SCENE_NAMES } from '@/shared/constants/scenes';
 import StatusPanel from './StatusPanel.vue';
 
 const { t } = useI18n();
 const store = useTerminalStore();
 const engine = useCommandEngine();
+const sceneStore = useSceneStore();
 
 const currentInput = ref('');
 const terminalHistory = ref<HTMLElement | null>(null);
@@ -126,6 +129,28 @@ const scrollToBottom = async () => {
 watch(() => store.history.length, scrollToBottom);
 watch(() => store.history.map(e => e.content), scrollToBottom, { deep: true });
 watch(inputBottomOffset, scrollToBottom);
+
+// Автофокус при завершении печати
+watch(() => store.isTyping, (newVal) => {
+  if (!newVal) {
+    nextTick(() => focusInput());
+  }
+});
+
+// Автофокус при переключении на IDLE сцену (или любую другую интерактивную)
+watch(() => sceneStore.currentScene, (newScene, oldScene) => {
+  if (newScene === SCENE_NAMES.DOOM) {
+    inputRef.value?.blur();
+  }
+
+  // Возврат фокуса при переходе ИЗ Doom или ПРИ переходе в IDLE
+  if ((oldScene === SCENE_NAMES.DOOM && newScene !== SCENE_NAMES.DOOM) || newScene === SCENE_NAMES.IDLE) {
+    nextTick(() => {
+      // Задержка чтобы дождаться конца анимации AppLayout
+      setTimeout(focusInput, 550);
+    });
+  }
+});
 
 const handleEnter = async () => {
   if (store.isTyping) {
@@ -175,6 +200,7 @@ const handleCtrlL = () => {
 };
 
 const focusInput = () => {
+  if (sceneStore.currentScene === SCENE_NAMES.DOOM) return;
   inputRef.value?.focus();
 };
 

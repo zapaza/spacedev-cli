@@ -62,6 +62,7 @@ export class CommandEngine {
           'about',
           'echo',
           'matrix',
+          'doom',
           'project',
           'refactor',
           'senior-power',
@@ -152,6 +153,22 @@ export class CommandEngine {
     });
 
     this.register({
+      name: 'doom',
+      descKey: 'cmd.doom.desc',
+      execute: async () => {
+        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth < 768;
+        if (isMobile) {
+          this.terminalStore.addEntry(t('errors.unknownCommand', { cmd: 'doom' }), 'error');
+          return;
+        }
+
+        await this.terminalStore.addTypewriterEntry(t('cmd.doom.loading'), 'system', 20);
+        this.terminalStore.setTheme('senior');
+        this.sceneStore.setScene(SCENE_NAMES.DOOM);
+      }
+    });
+
+    this.register({
       name: 'clear',
       descKey: 'cmd.clear.desc',
       execute: () => {
@@ -205,6 +222,9 @@ export class CommandEngine {
       name: 'senior-power',
       descKey: 'cmd.senior.desc',
       execute: async () => {
+        if (this.sceneStore.currentScene === SCENE_NAMES.DOOM) {
+          return;
+        }
         const isSenior = this.terminalStore.theme === 'senior';
         if (isSenior) {
           this.terminalStore.setTheme('default');
